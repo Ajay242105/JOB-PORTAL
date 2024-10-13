@@ -47,66 +47,62 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-
-        // Check for missing fields
+        
         if (!email || !password || !role) {
             return res.status(400).json({
-                message: "Incorrect email or password",
-                success: false,
+                message: "Something is missing",
+                success: false
             });
-        }
-
-        // Find user
-        const user = await User.findOne({ email });
+        };
+        let user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({
-                message: "User not found",
+                message: "Incorrect email or password.",
                 success: false,
-            });
+            })
         }
-
-        // Compare passwords
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             return res.status(400).json({
-                message: "Incorrect email or password",
+                message: "Incorrect email or password.",
                 success: false,
-            });
-        }
-
-        // Check role
+            })
+        };
+        // check role is correct or not
         if (role !== user.role) {
             return res.status(400).json({
-                message: "Account doesn't exist with current role",
-                success: false,
-            });
+                message: "Account doesn't exist with current role.",
+                success: false
+            })
+        };
+
+        const tokenData = {
+            userId: user._id
         }
-
-        const tokenData = { userId: user._id };
-        const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
-
-        return res.status(200).cookie("token", token, {
-            maxAge: 1 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            sameSite: 'strict',
-        }).json({
-            message: `Welcome back ${user.fullname}`,
-            user: {
+        try {
+            const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });            user = {
                 _id: user._id,
                 fullname: user.fullname,
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 role: user.role,
-                profile: user.profile,
-            },
-            success: true,
-        });
+                profile: user.profile
+            }
+
+            return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+                message: `Welcome back ${user.fullname}`,
+                user,
+                success: true
+            })
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error" });
     }
-};
-
+}
 //-----------logOut--------
 export const logOut = async (req, res) => {
     try {
