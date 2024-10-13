@@ -1,15 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import Navbar from '../shared/Navbar';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '../ui/input';
 import { RadioGroup } from '@radix-ui/react-radio-group';
 import { Button } from '../ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-
-
+import { USER_API_END_POINT } from '@/utils/constant';
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -17,69 +16,77 @@ const Login = () => {
     password: "",
     role: "",
   });
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
-  }
+  };
 
-  const onSubmitHandler = async (e) => {
+  const changeFileHandler = (e) => {
+    setInput({ ...input, file: e.target.files?.[0] });
+  };
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-   
+    setLoading(true);
+
     try {
-      const res=await axios.post(`${USER_API_END_POINT}/register`,formData,{
-        headers:{
-          "Content-Type":"application/json"
-        },
-        withCredentials:true,
+      const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+        headers: { 'Content-Type': "application/json" },
+        withCredentials: true,
       });
-      if(res.data.success){
+      if (res.data.success) {
         navigate("/");
         toast.success(res.data.message);
-
-
       }
-      
     } catch (error) {
       console.log(error);
-      
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-  };  
   return (
     <div>
       <Navbar></Navbar>
       <div className='flex items-center justify-center max-w-7xl mx-auto'>
-        <form onSubmit={onSubmitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
+        <form onSubmit={submitHandler} className='w-1/2 border border-gray-200 rounded-md p-4 my-10'>
           <h1 className='font-bold text-xl mb-5'>Login</h1>
-
           <div className='my-2'>
             <Label>Email</Label>
             <Input type="email"
               name="email"
               value={input.email}
-              onchange={changeEventHandler}
+              onChange={changeEventHandler}
               placeholder="ajay@gmail.com"
             ></Input>
           </div>
+
+
           <div className='my-2'>
             <Label>Password</Label>
-            <Input
-              type="text"
+            <Input type="password"
               name="password"
               value={input.password}
-              onchange={changeEventHandler}
-              placeholder="abc@123"
-            />
+              onChange={changeEventHandler}
+
+              placeholder="Password">
+            </Input>
+
           </div>
 
-          <div className='flex items-center justify-between'>
+          <div className='flex items -center justify-between'>
             <RadioGroup className="flex items-center gap-4 my-5">
               <div className="flex items-center space-x-2">
 
                 <Input
                   type="radio"
                   name="role"
-                  value={input.role == 'student'}
-                  onchange={changeEventHandler}
+                  value="student"
+                  checked={input.role === 'student'}
+                  onChange={changeEventHandler}
                   className="cursor-pointer"
                 />
                 <Label htmlFor="r1">Student</Label>
@@ -88,36 +95,27 @@ const Login = () => {
                 <Input
                   type="radio"
                   name="role"
-                  value={input.role == 'recruiter'}
-                  onchange={changeEventHandler}
+                  value="recruiter"
+                  checked={input.role === 'recruiter'}
+                  onChange={changeEventHandler}
                   className="cursor-pointer"
                 />
                 <Label htmlFor="r2">Recruiter</Label>
               </div>
 
-
             </RadioGroup>
 
 
           </div>
-
-
-
-          <Button type="submit" className="w-full my-4">Login</Button>
-          <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>signup</Link></span>
-
-
-
-
-
+          {
+            loading ? <Button className="w-full my-4"> <Loader2 className='mr-2 h-4 w-4 animate-spin' /> Please wait </Button> : <Button type="submit" className="w-full my-4">Login</Button>
+          }
+          <span className='text-sm'>Don't have an account? <Link to="/signup" className='text-blue-600'>Signup</Link></span>
 
         </form>
-
       </div>
-
     </div>
   )
 }
 
 export default Login;
-
