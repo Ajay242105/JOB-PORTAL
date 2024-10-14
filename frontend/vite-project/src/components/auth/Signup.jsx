@@ -9,6 +9,8 @@ import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { USER_API_END_POINT } from '@/utils/constant';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoading } from '@/redux/authSlice';
 
 const Signup = () => {
   const [input, setInput] = useState({
@@ -19,8 +21,10 @@ const Signup = () => {
     role: "",
     file: ""
   });
+  const { loading, user } = useSelector(store => store.auth);
+
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -32,7 +36,7 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    dispatch(setLoading(true));
     const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
@@ -55,7 +59,7 @@ const Signup = () => {
       console.log(error);
       toast.error(error.response.data.message);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 

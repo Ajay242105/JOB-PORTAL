@@ -5,6 +5,11 @@ const Home = () => {
     return (
         <div>  
               <Navbar />
+              <heroSection/>
+              {/* <CategoryCarousel/>
+              <LatestJobs/>
+              <Footer/> */}
+
         </div>
     )
 }
