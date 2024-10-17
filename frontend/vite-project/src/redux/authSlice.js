@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const authSlice=createSlice({
 name:'auth',
 initialState:{
-    loading:false
+    loading:false,
+    user:null
 },
 reducers:{
     //action
@@ -13,9 +14,16 @@ reducers:{
         // } else {
         //   console.error('Invalid payload type. Expected a boolean value.');
         // }
+
+    //    
+},
+setUser: (state, action) => {
+            state.user = action.payload;
       }
+
+
 }
 
 });
-export const {setLoading}=authSlice.actions;
+export const {setLoading,setUser}=authSlice.actions;
 export default authSlice.reducer;
